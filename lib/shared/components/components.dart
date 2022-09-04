@@ -237,6 +237,7 @@ Widget buildFloatingButton(context, taskController, timeController, dateControll
           prefixIcon: Icons.task,
           keyboardType: TextInputType.text,
           onChanged: (value) {
+            // TO Validate
             formKey.currentState!.validate();
           },
           validator: (value) {
@@ -259,8 +260,10 @@ Widget buildFloatingButton(context, taskController, timeController, dateControll
               context: context,
               initialTime: TimeOfDay.now(),
             ).then((value) {
-              timeController.text =
-                  value!.format(context).toString();
+              // TO Validate
+              timeController.text = value!.format(context).toString();
+              formKey.currentState!.validate();
+
             });
           },
           validator: (value) {
@@ -275,9 +278,6 @@ Widget buildFloatingButton(context, taskController, timeController, dateControll
           labelText: 'Date',
           prefixIcon: Icons.calendar_today,
           keyboardType: TextInputType.datetime,
-          onFieldSubmitted: (value) {
-            formKey.currentState!.validate();
-          },
           onTap: () {
             showDatePicker(
               context: context,
@@ -286,6 +286,8 @@ Widget buildFloatingButton(context, taskController, timeController, dateControll
               lastDate: DateTime.parse('2022-12-16',),
             ).then((value) {
               dateController.text = DateFormat.yMMMd().format(value!);
+              // TO Validate
+              formKey.currentState!.validate();
             });
           },
           validator: (value) {
