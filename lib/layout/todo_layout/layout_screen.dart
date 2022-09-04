@@ -10,6 +10,9 @@ class TodoLayout extends StatelessWidget {
   var dateController = TextEditingController();
   var scaffoldKey = GlobalKey<ScaffoldState>();
   var formKey = GlobalKey<FormState>();
+  var taskTextFormFieldKey = GlobalKey<FormFieldState>();
+  var timeTextFormFieldKey = GlobalKey<FormFieldState>();
+  var dateTextFormFieldKey = GlobalKey<FormFieldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,10 @@ class TodoLayout extends StatelessWidget {
           var cubit = TodoCubit.get(context);
           return Scaffold(
             key: scaffoldKey,
-            appBar: AppBar(),
+            appBar: AppBar(
+              title: const Text('Todo Application'),
+              centerTitle: true,
+            ),
             body: cubit.screen[cubit.currentIndex],
             bottomNavigationBar: BottomNavigationBar(
               onTap: (index) {
@@ -76,6 +82,9 @@ class TodoLayout extends StatelessWidget {
                           timeController,
                           dateController,
                           formKey,
+                          taskTextFormFieldKey,
+                          timeTextFormFieldKey,
+                          dateTextFormFieldKey,
                         ),
                       )
                       .closed

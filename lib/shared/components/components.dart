@@ -13,7 +13,10 @@ Widget defaultTextForm({
   FormFieldValidator<String>? validator,
   GestureTapCallback? onTap,
   bool obscureText = false,
-}) => TextFormField(
+  Key? key,
+}) =>
+    TextFormField(
+      key: key,
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(prefixIcon),
@@ -36,7 +39,8 @@ Widget defaultButton({
   Color color = Colors.blue,
   required VoidCallback? onPressed,
   required String text,
-}) => Container(
+}) =>
+    Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
@@ -81,249 +85,200 @@ void navigateAndFinish(context, widget) {
     MaterialPageRoute(
       builder: (context) => widget,
     ),
-        (route) => true,
+    (route) => true,
   );
 }
 
-Widget buildItems(context, Map item, index) => Dismissible(
-
-  key: Key(item['id'].toString()),
-  onDismissed: (direction) {
-    TodoCubit.get(context).deleteDB(id: item['id']);
-  },
-  child:   Padding(
-
-    padding: const EdgeInsets.all(20.0),
-
-    child: Row(
-
-      children: [
-
-         CircleAvatar(
-
-          radius: 50.0,
-
-          backgroundColor: Colors.blue,
-
-          child: Text(
-
-            item['time'],
-
-            style: const TextStyle(
-
-              fontWeight: FontWeight.bold,
-
-              fontSize: 18.0,
-
-              color: Colors.white,
-
+Widget buildFloatingButton(
+  context,
+  taskController,
+  timeController,
+  dateController,
+  formKey,
+  taskTextFormFieldKey,
+  timeTextFormFieldKey,
+  dateTextFormFieldKey,
+) =>
+    Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            defaultTextForm(
+              key: taskTextFormFieldKey,
+              controller: taskController,
+              labelText: 'Task',
+              prefixIcon: Icons.task,
+              keyboardType: TextInputType.text,
+              onChanged: (value) {
+                taskTextFormFieldKey.currentState!.validate();
+              },
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Task Must Not Be Empty';
+                }
+              },
             ),
-
-          ),
-
+            const SizedBox(
+              height: 10,
+            ),
+            defaultTextForm(
+              key: timeTextFormFieldKey,
+              controller: timeController,
+              labelText: 'Time',
+              prefixIcon: Icons.watch_later_outlined,
+              keyboardType: TextInputType.text,
+              onTap: () {
+                showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                ).then((value) {
+                  // TO Validate
+                  timeController.text = value!.format(context).toString();
+                  timeTextFormFieldKey.currentState!.validate();
+                });
+              },
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Time Must Not Be Empty';
+                }
+              },
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            defaultTextForm(
+              key: dateTextFormFieldKey,
+              controller: dateController,
+              labelText: 'Date',
+              prefixIcon: Icons.calendar_today,
+              keyboardType: TextInputType.datetime,
+              onTap: () {
+                showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.parse(
+                    '2022-12-16',
+                  ),
+                ).then((value) {
+                  dateController.text = DateFormat.yMMMd().format(value!);
+                  // TO Validate
+                  dateTextFormFieldKey.currentState!.validate();
+                });
+              },
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Date Must Not Be Empty';
+                }
+              },
+            ),
+          ],
         ),
+      ),
+    );
 
-        const SizedBox(
-
-          width: 20,
-
-        ),
-
-        Expanded(
-
-          child: Column(
-
-            mainAxisSize: MainAxisSize.min,
-
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children:  [
-
-              Text(
-
-                item['taskName'],
-
-                style: Theme.of(context).textTheme.subtitle1!.copyWith(
-
-                  fontWeight: FontWeight.w600,
-
-                  fontSize: 17.0,
-
+Widget buildItems(context, Map item, index) => Dismissible(
+      key: Key(item['id'].toString()),
+      onDismissed: (direction) {
+        TodoCubit.get(context).deleteDB(id: item['id']);
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 50.0,
+              backgroundColor: Colors.blue,
+              child: Text(
+                item['time'],
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  color: Colors.white,
                 ),
-
               ),
-
-              const SizedBox(
-
-                height: 10,
-
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item['taskName'],
+                    style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 17.0,
+                        ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    item['date'],
+                    style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15.0,
+                          color: Colors.grey,
+                        ),
+                  ),
+                ],
               ),
-
-              Text(
-
-                item['date'],
-
-                style: Theme.of(context).textTheme.subtitle1!.copyWith(
-
-                  fontWeight: FontWeight.w600,
-
-                  fontSize: 15.0,
-
-                  color: Colors.grey,
-
-                ),
-
+            ),
+            IconButton(
+              onPressed: () {
+                TodoCubit.get(context).updateDB(status: 'done', id: item['id']);
+              },
+              icon: const Icon(
+                Icons.done,
+                color: Colors.green,
               ),
-
-            ],
-
-          ),
-
+            ),
+            IconButton(
+              onPressed: () {
+                TodoCubit.get(context)
+                    .updateDB(status: 'archive', id: item['id']);
+              },
+              icon: const Icon(
+                Icons.archive,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ),
+      ),
+    );
 
-        IconButton(
 
-          onPressed: () {
 
-            TodoCubit.get(context).updateDB(status: 'done', id: item['id']);
-
-          },
-
-          icon: const Icon(
-
-            Icons.done,
-
-            color: Colors.green,
-
-          ),
-
-        ),
-
-        IconButton(
-
-          onPressed: () {
-
-            TodoCubit.get(context).updateDB(status: 'archive', id: item['id']);
-
-          },
-
-          icon: const Icon(
-
-            Icons.archive,
-
-            color: Colors.grey,
-
-          ),
-
-        ),
-
-      ],
-
-    ),
-
-  ),
-);
-
-Widget buildFloatingButton(context, taskController, timeController, dateController, formKey) => Padding(
-  padding: const EdgeInsets.all(15.0),
-  child: Form(
-    key: formKey,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        defaultTextForm(
-          controller: taskController,
-          labelText: 'Task',
-          prefixIcon: Icons.task,
-          keyboardType: TextInputType.text,
-          onChanged: (value) {
-            // TO Validate
-            formKey.currentState!.validate();
-          },
-          validator: (value) {
-            if (value!.isEmpty) {
-              return 'Task Must Not Be Empty';
-            }
-          },
-        ),
-        const SizedBox(height: 10,),
-        defaultTextForm(
-          controller: timeController,
-          labelText: 'Time',
-          prefixIcon: Icons.watch_later_outlined,
-          keyboardType: TextInputType.text,
-          onFieldSubmitted: (value) {
-            formKey.currentState!.validate();
-          },
-          onTap: () {
-            showTimePicker(
-              context: context,
-              initialTime: TimeOfDay.now(),
-            ).then((value) {
-              // TO Validate
-              timeController.text = value!.format(context).toString();
-              formKey.currentState!.validate();
-
-            });
-          },
-          validator: (value) {
-            if (value!.isEmpty) {
-              return 'Time Must Not Be Empty';
-            }
-          },
-        ),
-        const SizedBox(height: 10,),
-        defaultTextForm(
-          controller: dateController,
-          labelText: 'Date',
-          prefixIcon: Icons.calendar_today,
-          keyboardType: TextInputType.datetime,
-          onTap: () {
-            showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime.now(),
-              lastDate: DateTime.parse('2022-12-16',),
-            ).then((value) {
-              dateController.text = DateFormat.yMMMd().format(value!);
-              // TO Validate
-              formKey.currentState!.validate();
-            });
-          },
-          validator: (value) {
-            if (value!.isEmpty) {
-              return 'Date Must Not Be Empty';
-            }
-          },
-        ),
-      ],
-    ),
-  ),
-);
-
-Widget buildListItem(context, cubit) =>
-    cubit.isNotEmpty
+Widget buildListItem(context, cubit) => cubit.isNotEmpty
     ? ListView.separated(
-    itemBuilder: (context, index) =>
-        buildItems(context, cubit[index], index),
-    separatorBuilder: (context, index) => divideBy(),
-    itemCount: cubit.length)
+        itemBuilder: (context, index) =>
+            buildItems(context, cubit[index], index),
+        separatorBuilder: (context, index) => divideBy(),
+        itemCount: cubit.length)
     : Center(
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: const [
-      Icon(
-        Icons.menu,
-        color: Colors.grey,
-        size: 100,
-      ),
-      Text(
-        'No Tasks Here, Write Your Task Now ...',
-        style: TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.w600,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(
+              Icons.menu,
+              color: Colors.grey,
+              size: 100,
+            ),
+            Text(
+              'No Tasks Here, Write Your Task Now ...',
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ),
-      ),
-    ],
-  ),
-);
+      );
